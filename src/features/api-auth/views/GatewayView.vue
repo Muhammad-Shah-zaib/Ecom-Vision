@@ -33,6 +33,12 @@ async function handleValidate() {
       store.setApiKey(apiKey.value)
       store.setApiProvider(provider.value)
       store.setAuthenticated(true)
+      
+      console.log('[GatewayView] Validation success. Store state:', {
+        isAuthenticated: store.state.isAuthenticated,
+        apiKeySet: !!store.state.apiKey
+      })
+
       router.push({ name: 'studio' })
     } else {
       validationError.value = result.message

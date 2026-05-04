@@ -9,24 +9,51 @@ import {
   getPromptsForCategory,
 } from '@/features/studio-generation/services/generateImages'
 
+// ── Persistence Helpers ───────────────────────
+const STORAGE_KEY = 'dhaga-studio-state'
+
+function saveState(data) {
+  try {
+    const toSave = {
+      apiKey: data.apiKey,
+      apiProvider: data.apiProvider,
+      isAuthenticated: data.isAuthenticated,
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave))
+  } catch (e) {
+    console.error('Failed to save state:', e)
+  }
+}
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY)
+    return saved ? JSON.parse(saved) : {}
+  } catch (e) {
+    return {}
+  }
+}
+
+const savedState = loadState()
+
 const state = reactive({
   // ── Step 1: API Auth ──
-  apiKey: '',
-  apiProvider: 'gemini', // 'gemini' | 'openrouter'
-  isAuthenticated: false,
+  apiKey: savedState.apiKey || '',
+  apiProvider: savedState.apiProvider || 'gemini',
+  isAuthenticated: savedState.isAuthenticated || false,
 
   // ── Step 2: Studio ──
   shotToggles: {
-    topView: true,
-    sideView: true,
-    frontView: false,
+    topView: false,
+    sideView: false,
+    frontView: true,
   },
   isGenerating: false,
   selectedCategory: DEFAULT_CATEGORY,
   customPrompts: { ...getPromptsForCategory(DEFAULT_CATEGORY) },
 
   // ── Uploaded product image ──
-  uploadedImage: null, // { base64, mimeType, dataUrl, originalName, finalSize, wasCompressed }
+  uploadedImage: null,
 
   // ── Step 3: Gallery ──
   generatedImages: [],
@@ -38,19 +65,25 @@ const state = reactive({
  */
 function setApiKey(key) {
   state.apiKey = key
+  saveState(state)
 }
 
 function setApiProvider(provider) {
   state.apiProvider = provider
+  saveState(state)
 }
 
 function setAuthenticated(value) {
   state.isAuthenticated = value
+  saveState(state)
 }
 
 function toggleShot(shotKey) {
   if (state.shotToggles[shotKey] !== undefined) {
-    state.shotToggles[shotKey] = !state.shotToggles[shotKey]
+    // Act like a radio button: only the clicked one is true, others are false
+    Object.keys(state.shotToggles).forEach(k => {
+      state.shotToggles[k] = (k === shotKey)
+    })
   }
 }
 
@@ -80,7 +113,6 @@ function getActiveShots() {
 
 function setSelectedCategory(categoryKey) {
   state.selectedCategory = categoryKey
-  // Reset prompts to the category defaults
   state.customPrompts = { ...getPromptsForCategory(categoryKey) }
 }
 
@@ -89,7 +121,6 @@ function setCustomPrompt(shotKey, value) {
 }
 
 function setUploadedImage(imageData) {
-  // imageData: { base64, mimeType, dataUrl, originalName, finalSize, wasCompressed }
   state.uploadedImage = imageData
 }
 
@@ -100,7 +131,7 @@ function clearUploadedImage() {
 function resetPipeline() {
   state.shotToggles = {
     topView: true,
-    sideView: true,
+    sideView: false,
     frontView: false,
   }
   state.isGenerating = false
@@ -130,3 +161,4 @@ export function useAppStore() {
     resetPipeline,
   }
 }
+

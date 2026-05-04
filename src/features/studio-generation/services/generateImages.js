@@ -192,8 +192,19 @@ export async function generateImages(
     apiContext?.uploadedImage?.mimeType
 
   if (useRealApi) {
+    const provider = apiContext.apiProvider || 'gemini'
+    console.log(`[generateImages] Using Real API (${provider}) for`, activeShots)
+    
+    if (provider === 'openrouter') {
+      return generateWithOpenRouterApi(activeShots, customPrompts, onProgress, apiContext)
+    }
     return generateWithGeminiApi(activeShots, customPrompts, onProgress, apiContext)
   }
+  
+  console.warn('[generateImages] Falling back to MOCK images. Reason:', 
+    !apiContext?.apiKey ? 'Missing API Key' : 
+    !apiContext?.uploadedImage ? 'Missing Uploaded Image' : 'Incomplete apiContext'
+  )
   return generateMock(activeShots, customPrompts, onProgress)
 }
 
@@ -229,6 +240,48 @@ async function generateWithGeminiApi(activeShots, customPrompts, onProgress, api
       url: generatedDataUrl,
       size: 'AI Generated',
       resolution: 'Gemini Output',
+      format: 'PNG',
+      createdAt: new Date().toISOString(),
+    })
+
+    onProgress(Math.round(((i + 1) / total) * 95))
+  }
+
+  onProgress(100)
+  return results
+}
+
+// ─────────────────────────────────────────────
+// REAL OPENROUTER GENERATION
+// ─────────────────────────────────────────────
+async function generateWithOpenRouterApi(activeShots, customPrompts, onProgress, apiContext) {
+  const { generateWithOpenRouter } = await import('./openRouterService.js')
+  const results = []
+  const total = activeShots.length
+
+  for (let i = 0; i < total; i++) {
+    const shotKey = activeShots[i]
+    const angleMeta = SHOT_ANGLES[shotKey]
+    const prompt = customPrompts[shotKey] || ''
+
+    onProgress(Math.round((i / total) * 90))
+
+    const generatedDataUrl = await generateWithOpenRouter({
+      apiKey: apiContext.apiKey,
+      base64Image: apiContext.uploadedImage.base64,
+      mimeType: apiContext.uploadedImage.mimeType,
+      prompt,
+    })
+
+    results.push({
+      id: `${shotKey}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      shotType: shotKey,
+      shotLabel: angleMeta.label,
+      name: `${angleMeta.label} — AI Generated (OpenRouter)`,
+      prompt,
+      url: generatedDataUrl,
+      size: 'AI Generated',
+      resolution: 'OpenRouter Output',
       format: 'PNG',
       createdAt: new Date().toISOString(),
     })

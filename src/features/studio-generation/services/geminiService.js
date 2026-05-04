@@ -2,7 +2,7 @@
  * geminiService.js — Dhaga Co. Studio
  * Handles real Gemini API calls for AI-powered product image generation.
  *
- * Model: gemini-2.0-flash-preview-image-generation
+ * Model: gemini-2.5-flash-image
  *   - Accepts an input image + text prompt
  *   - Returns a generated image (base64 PNG/JPEG) via responseModalities: ["IMAGE"]
  *
@@ -10,7 +10,8 @@
  */
 
 const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta'
-const IMAGE_GEN_MODEL = 'gemini-2.0-flash-preview-image-generation'
+// const IMAGE_GEN_MODEL = 'gemini-2.5-flash-image';
+const IMAGE_GEN_MODEL = 'gemini-3.1-flash-image-preview';
 
 /**
  * Build the system context prefix that's added to every prompt.
@@ -63,15 +64,25 @@ export async function generateWithGemini({ apiKey, base64Image, mimeType, prompt
     },
   }
 
+  console.log('[geminiService] Request Body:', {
+    ...body,
+    contents: body.contents.map(c => ({
+      parts: c.parts.map(p => p.inlineData ? { inlineData: { mimeType: p.inlineData.mimeType, data: '(base64 data truncated...)' } } : p)
+    }))
+  })
+
   const response = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   })
 
+  console.log('[geminiService] Response Status:', response.status)
+
   if (!response.ok) {
     const err = await response.json().catch(() => ({}))
     const message = err?.error?.message || `HTTP ${response.status}`
+    console.error('[geminiService] Generation Error:', message, err)
     throw new GeminiError(message, response.status, err)
   }
 
@@ -109,13 +120,10 @@ export class GeminiError extends Error {
  * @returns {Promise<boolean>}
  */
 export async function verifyGeminiKey(apiKey) {
-  const url = `${GEMINI_API_BASE}/models/gemini-2.0-flash:generateContent?key=${apiKey}`
+  const url = `${GEMINI_API_BASE}/models/${IMAGE_GEN_MODEL}?key=${apiKey}`
   const response = await fetch(url, {
-    method: 'POST',
+    method: 'GET',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: 'Hi' }] }],
-    }),
   })
 
   if (!response.ok) {

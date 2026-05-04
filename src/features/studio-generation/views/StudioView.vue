@@ -82,12 +82,19 @@ async function handleGenerate() {
       store.state.isAuthenticated && store.state.uploadedImage
         ? {
             apiKey: store.state.apiKey,
+            apiProvider: store.state.apiProvider,
             uploadedImage: {
               base64: store.state.uploadedImage.base64,
               mimeType: store.state.uploadedImage.mimeType,
             },
           }
         : null
+
+    console.log('[StudioView] apiContext prepared:', { 
+      hasContext: !!apiContext,
+      isAuthenticated: store.state.isAuthenticated,
+      hasImage: !!store.state.uploadedImage 
+    })
 
     const images = await generateImages(
       activeShots,
@@ -271,7 +278,7 @@ async function handleGenerate() {
             Upload a product image above to unlock generation
           </p>
           <p v-else-if="activeCount === 0" class="generate-hint">
-            Toggle at least one shot angle on the left
+            Select a shot angle on the left
           </p>
 
           <button

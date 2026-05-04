@@ -43,10 +43,31 @@ export async function validateApiKey(key, provider = 'gemini') {
     }
   }
 
-  // OpenRouter — mock validation for now
-  await new Promise((r) => setTimeout(r, 1200))
-  return {
-    valid: true,
-    message: 'Connected to OpenRouter API.',
+  // OpenRouter — real validation via /auth/key endpoint
+  try {
+    const url = 'https://openrouter.ai/api/v1/auth/key'
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${key.trim()}`
+      }
+    })
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        return { valid: false, message: 'Invalid OpenRouter API key.' }
+      }
+      return { valid: false, message: `OpenRouter validation failed (HTTP ${response.status})` }
+    }
+    
+    return {
+      valid: true,
+      message: 'Successfully connected to OpenRouter API.',
+    }
+  } catch (err) {
+    return {
+      valid: false,
+      message: 'Could not reach the OpenRouter API. Check your internet connection.',
+    }
   }
 }
