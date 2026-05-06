@@ -1,23 +1,31 @@
 <script setup>
 /**
- * GatewayView — Step 1: API Key Authentication
- * The user pastes their API key, selects a provider, and validates
- * before proceeding to the Studio.
+ * GatewayView — Step 1: API Key / Secret Key Authentication
+ * Three providers: Gemini | OpenRouter | Vertex AI Proxy
  */
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '@/core/store/appStore'
 import { validateApiKey } from '../services/validateKey'
+import { Icon } from '@iconify/vue'
+import { PROVIDERS, PROVIDER_LABELS, DEFAULT_PROXY_URL } from '../constants'
+import { validateSecretKey } from '@/features/gallery-export/services/storeService'
 
 const router = useRouter()
 const store = useAppStore()
 
 const apiKey = ref('')
-const provider = ref('gemini')
+const storeSecretKey = ref(localStorage.getItem('dhaga-store-key') || '')
+const provider = ref(PROVIDERS.GEMINI)
+const proxyUrl = ref(store.state.proxyUrl || DEFAULT_PROXY_URL)
 const isValidating = ref(false)
 const validationError = ref('')
 const showKey = ref(false)
+const showStoreKey = ref(false)
 
+const isProxy = computed(() => provider.value === PROVIDERS.PROXY)
+const keyLabel = computed(() => isProxy.value ? 'SECRET KEY' : 'API KEY')
+const keyPlaceholder = computed(() => isProxy.value ? 'Enter your proxy secret key...' : 'Paste your API key here...')
 const canSubmit = computed(() => apiKey.value.trim().length >= 8 && !isValidating.value)
 
 async function handleValidate() {
@@ -27,28 +35,44 @@ async function handleValidate() {
   validationError.value = ''
 
   try {
-    const result = await validateApiKey(apiKey.value, provider.value)
+    // 1. Validate AI Engine Key
+    const result = await validateApiKey(
+      apiKey.value,
+      provider.value,
+      isProxy.value ? proxyUrl.value : '',
+    )
 
-    if (result.valid) {
-      store.setApiKey(apiKey.value)
-      store.setApiProvider(provider.value)
-      store.setAuthenticated(true)
-      
-      console.log('[GatewayView] Validation success. Store state:', {
-        isAuthenticated: store.state.isAuthenticated,
-        apiKeySet: !!store.state.apiKey
-      })
-
-      router.push({ name: 'studio' })
-    } else {
+    if (!result.valid) {
       validationError.value = result.message
+      isValidating.value = false
+      return
     }
-  } catch {
+
+    // 2. Optional: Validate Store Secret Key if provided
+    if (storeSecretKey.value.trim()) {
+      const isStoreKeyValid = await validateSecretKey(storeSecretKey.value.trim())
+      if (!isStoreKeyValid) {
+        validationError.value = 'Invalid Store Secret Key. Please check and try again.'
+        isValidating.value = false
+        return
+      }
+      localStorage.setItem('dhaga-store-key', storeSecretKey.value.trim())
+    }
+
+    // Success
+    store.setApiKey(apiKey.value)
+    store.setApiProvider(provider.value)
+    if (isProxy.value) store.setProxyUrl(proxyUrl.value)
+    store.setAuthenticated(true)
+    router.push({ name: 'studio' })
+  } catch (err) {
+    console.error(err)
     validationError.value = 'Connection failed. Please try again.'
   } finally {
     isValidating.value = false
   }
 }
+
 </script>
 
 <template>
@@ -60,24 +84,7 @@ async function handleValidate() {
     <div class="gateway-card animate-fade-in">
       <!-- Icon -->
       <div class="gateway-icon">
-        <svg
-          width="40"
-          height="40"
-          viewBox="0 0 40 40"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <circle cx="20" cy="20" r="19" stroke="var(--color-border)" stroke-width="1" />
-          <circle
-            cx="20"
-            cy="20"
-            r="12"
-            stroke="var(--color-outline)"
-            stroke-width="1"
-            stroke-dasharray="3 3"
-          />
-          <circle cx="20" cy="20" r="4" fill="var(--color-electric)" />
-        </svg>
+        <Icon icon="mdi:security" width="40" height="40" style="color: var(--color-electric)" />
       </div>
 
       <!-- Header -->
@@ -95,30 +102,52 @@ async function handleValidate() {
         <div class="toggle-group">
           <button
             class="toggle-btn"
-            :class="{ 'toggle-btn--active': provider === 'gemini' }"
-            @click="provider = 'gemini'"
+            :class="{ 'toggle-btn--active': provider === PROVIDERS.GEMINI }"
+            @click="provider = PROVIDERS.GEMINI"
           >
             Gemini
           </button>
           <button
             class="toggle-btn"
-            :class="{ 'toggle-btn--active': provider === 'openrouter' }"
-            @click="provider = 'openrouter'"
+            :class="{ 'toggle-btn--active': provider === PROVIDERS.OPENROUTER }"
+            @click="provider = PROVIDERS.OPENROUTER"
           >
             OpenRouter
+          </button>
+          <button
+            class="toggle-btn toggle-btn--proxy"
+            :class="{ 'toggle-btn--active': provider === PROVIDERS.PROXY }"
+            @click="provider = PROVIDERS.PROXY"
+          >
+            Proxy
           </button>
         </div>
       </div>
 
-      <!-- API Key Input -->
+      <!-- Proxy URL Input (only when proxy selected) -->
+      <Transition name="slide-fade">
+        <div v-if="isProxy" class="key-input-group">
+          <label class="typo-label" for="proxy-url-input">PROXY URL</label>
+          <input
+            id="proxy-url-input"
+            type="url"
+            v-model="proxyUrl"
+            placeholder="http://localhost:4000"
+            class="input-field"
+          />
+          <p class="proxy-hint">Base URL of your vertex-ai-proxy server</p>
+        </div>
+      </Transition>
+
+      <!-- API / Secret Key Input -->
       <div class="key-input-group">
-        <label class="typo-label" for="api-key-input">API KEY</label>
+        <label class="typo-label" for="api-key-input">{{ keyLabel }}</label>
         <div class="input-wrapper">
           <input
             id="api-key-input"
             :type="showKey ? 'text' : 'password'"
             v-model="apiKey"
-            placeholder="Paste your API key here..."
+            :placeholder="keyPlaceholder"
             class="input-field"
             @keydown.enter="handleValidate"
           />
@@ -128,67 +157,46 @@ async function handleValidate() {
             :title="showKey ? 'Hide key' : 'Show key'"
             type="button"
           >
-            <svg
-              v-if="!showKey"
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.5"
-            >
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-              <circle cx="12" cy="12" r="3" />
-            </svg>
-            <svg
-              v-else
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.5"
-            >
-              <path
-                d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"
-              />
-              <line x1="1" y1="1" x2="23" y2="23" />
-            </svg>
+            <Icon :icon="showKey ? 'mdi:eye-off-outline' : 'mdi:eye-outline'" width="18" height="18" />
           </button>
         </div>
       </div>
 
+      <!-- Store Secret Key Input (Optional) -->
+      <div class="key-input-group">
+        <label class="typo-label" for="store-key-input">STORE SECRET KEY (OPTIONAL)</label>
+        <div class="input-wrapper">
+          <input
+            id="store-key-input"
+            :type="showStoreKey ? 'text' : 'password'"
+            v-model="storeSecretKey"
+            placeholder="For 'Push to Store' features..."
+            class="input-field"
+            @keydown.enter="handleValidate"
+          />
+          <button
+            class="eye-btn"
+            @click="showStoreKey = !showStoreKey"
+            :title="showStoreKey ? 'Hide key' : 'Show key'"
+            type="button"
+          >
+            <Icon :icon="showStoreKey ? 'mdi:eye-off-outline' : 'mdi:eye-outline'" width="18" height="18" />
+          </button>
+        </div>
+      </div>
+
+
       <!-- Security Notice -->
       <div class="security-notice">
-        <svg
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.5"
-        >
-          <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-          <path d="M7 11V7a5 5 0 0110 0v4" />
-        </svg>
-        <span>Your key is stored locally and never sent to our servers</span>
+        <Icon icon="mdi:lock-outline" width="14" height="14" />
+        <span v-if="isProxy">Your secret key is stored locally and used only to authenticate with your proxy</span>
+        <span v-else>Your key is stored locally and never sent to our servers</span>
       </div>
 
       <!-- Error Message -->
       <Transition name="slide-fade">
         <div v-if="validationError" class="error-message">
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <circle cx="12" cy="12" r="10" />
-            <line x1="15" y1="9" x2="9" y2="15" />
-            <line x1="9" y1="9" x2="15" y2="15" />
-          </svg>
+          <Icon icon="mdi:alert-circle-outline" width="16" height="16" />
           {{ validationError }}
         </div>
       </Transition>
@@ -201,18 +209,7 @@ async function handleValidate() {
         :disabled="!canSubmit"
         @click="handleValidate"
       >
-        <svg
-          v-if="isValidating"
-          class="spinner"
-          width="18"
-          height="18"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <circle cx="12" cy="12" r="10" stroke-dasharray="60" stroke-dashoffset="20" />
-        </svg>
+        <Icon v-if="isValidating" icon="mdi:loading" class="spinner" width="18" height="18" />
         <span v-if="isValidating">Validating...</span>
         <span v-else>Connect &amp; Continue</span>
       </button>
@@ -236,7 +233,7 @@ async function handleValidate() {
   transform: translate(-50%, -50%);
   width: 500px;
   height: 500px;
-  background: radial-gradient(circle, rgba(0, 112, 243, 0.06) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(71, 161, 246, 0.1) 0%, transparent 70%);
   pointer-events: none;
 }
 
@@ -248,11 +245,12 @@ async function handleValidate() {
   align-items: center;
   gap: 24px;
   padding: 40px 36px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid var(--color-border);
+  background: var(--color-surface-container);
+  border: 1px solid rgba(255, 255, 255, 0.04);
   border-radius: var(--radius-xl);
   position: relative;
   z-index: 1;
+  box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.5);
 }
 
 .gateway-icon {
@@ -307,9 +305,20 @@ async function handleValidate() {
   transition: all 0.2s ease;
 }
 
+.toggle-btn--proxy.toggle-btn--active {
+  background: var(--color-primary-container);
+  color: var(--color-primary);
+}
+
 .toggle-btn--active {
-  background: rgba(0, 112, 243, 0.1);
-  color: var(--color-electric);
+  background: var(--color-primary-container);
+  color: var(--color-primary);
+}
+
+.proxy-hint {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  margin-top: 2px;
 }
 
 .toggle-btn:hover:not(.toggle-btn--active) {

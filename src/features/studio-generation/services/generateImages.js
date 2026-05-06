@@ -3,6 +3,7 @@
  * Category-aware prompt system for artisanal handmade product photography.
  * Each category carries per-angle prompts crafted for small-batch crochet items.
  */
+import { PROVIDERS } from '@/features/api-auth/constants'
 
 // ─────────────────────────────────────────────
 // PRODUCT CATEGORIES — Dhaga Co.
@@ -11,93 +12,93 @@
 export const PRODUCT_CATEGORIES = {
   jerseys: {
     label: 'Jerseys & Jackets',
-    icon: '🧥',
+    icon: 'mdi:tshirt-crew',
     description: 'Crochet tops, cardigans, and outerwear',
     prompts: {
       topView:
-        'Top-down flat-lay of a handmade crochet jersey draped neatly on a warm cream linen surface, surrounded by small crochet accessories like tiny flowers and yarn spools, soft natural window light, bright and airy lifestyle photography, product photography for Dhaga Co.',
+        'Flat-lay of a handmade crochet jersey laid on a light wooden floor, soft diffused indoor light with no harsh brightness, a small crochet bunny tucked beside it, a crochet flower motif and a spool of yarn scattered naturally around, shot from directly above, warm and cozy room feel, looks like a real candid home photo.',
       sideView:
-        'A dressed mannequin or plaster statue wearing a beautifully crafted crochet jacket displayed against a textured white-washed wall, small crochet wall hangings and macramé in the background, warm soft studio lighting, editorial product photography for Dhaga Co.',
+        'A handmade crochet jersey hanging on a simple wooden hanger on a wall hook, soft warm ambient indoor lighting with no direct sunlight, a small crochet bunny sitting on a nearby wooden ledge, a tiny crochet flower hanging loosely from the hanger, the wall behind has a natural matte texture, feels like a real lived-in room, photographed from a gentle side angle.',
       frontView:
-        'Front hero shot of a crochet jersey worn by an elegant white plaster statue on a pedestal, warm cream and sage green background, soft diffused lighting from the front, a few crochet flowers placed around the base for styling, clean e-commerce product photography for Dhaga Co.',
+        'A handmade crochet jersey hanging on a wooden hanger fixed to a hook on a soft matte white indoor wall, warm and even ambient room lighting, no harsh sunlight, a small potted indoor plant on a tiny wooden wall shelf in the upper left, a handmade crochet bunny sitting on a small wooden stool at the lower right, a few crochet flowers resting near the base, the scene feels like a real cozy room and not a studio setup.',
     },
   },
   keychains: {
     label: 'Keychains',
-    icon: '🔑',
+    icon: 'mdi:key',
     description: 'Crochet keychains and bag charms',
     prompts: {
       topView:
-        'Top-down flat-lay of an assortment of handmade crochet keychains arranged on a textured blush pink or warm white surface, surrounded by colourful yarn threads, tiny crochet motifs, and a wooden spool, bright natural lighting, e-commerce product photography for Dhaga Co.',
+        'Top-down flat-lay on a light wooden table indoors, a fabric tote bag lying flat with a handmade crochet keychain attached to its zipper, a few yarn threads and a crochet hook placed casually around it, soft natural daylight from a window above, real home surface, unposed and warm.',
       sideView:
-        'Side-angle shot of a cute crochet keychain hanging from the zipper of a handmade crochet tote bag, bright pastel background (sage green or soft peach), shallow depth of field, warm lifestyle photography for Dhaga Co.',
+        'A fabric tote bag hanging on a light wooden wall hook indoors, a handmade crochet keychain clipped to the zipper and hanging freely, soft warm indoor light from a nearby window, the wall texture slightly visible in the background, the keychain sharp and in focus, natural and real-looking.',
       frontView:
-        'Front-facing studio shot of a handmade crochet keychain displayed on a small rustic wooden table, crochet miniatures and yarn bits scattered casually around, softly lit from above, pastel background, clean e-commerce product photography for Dhaga Co.',
+        'Front-facing close-up of a handmade crochet keychain attached to a fabric bag placed on a wooden table, a warm indoor room softly blurred behind, natural light from the front, the keychain centred and in crisp detail, looks like a real lifestyle photo taken at home.',
     },
   },
   shoes: {
     label: 'Shoes',
-    icon: '👟',
+    icon: 'mdi:shoe-sneaker',
     description: 'Crochet footwear and slippers',
     prompts: {
       topView:
-        'Top-down view of a pair of handmade crochet shoes placed symmetrically on a natural jute mat, surrounded by crochet flowers and colourful yarn, bright airy lighting, product photography for Dhaga Co.',
+        'Top-down view of a pair of handmade crochet shoes placed on a light wooden floor indoors, soft warm daylight falling across them from a nearby window, the floor grain visible, a small crochet flower tucked beside one shoe, no person, natural and clean indoor floor shot.',
       sideView:
-        'Side profile of a crochet shoe or slipper worn by a white plaster statue foot/leg prop, displayed against a warm cream textured backdrop, soft natural studio lighting, lifestyle product photography for Dhaga Co.',
+        'Side profile of a pair of crochet shoes resting on a light wooden indoor floor, a softly blurred white room wall behind them, warm natural window light from the side, no model or mannequin, positioned as if naturally set down, real and clean indoor atmosphere.',
       frontView:
-        'Front-facing shot of crochet shoes worn by a white mannequin statue, warmly lit cream or sage background, crochet accessories placed beside for context, sharp and polished e-commerce product photography for Dhaga Co.',
+        'Front-facing shot of a pair of handmade crochet shoes on a wooden indoor floor, a warm blurred room interior behind them, bright natural light from the front, no person or mannequin, the shoes slightly angled for depth, the crochet texture sharp and clear, feels like a real home setting.',
     },
   },
   decor: {
     label: 'Décor Pieces',
-    icon: '🌸',
+    icon: 'mdi:flower',
     description: 'Flower pots, wall hangings, home décor',
     prompts: {
       topView:
-        'Top-down flat-lay of a handmade crochet flower pot with a small blooming flower, placed on a white wooden surface alongside small crochet items like mini coasters, yarn spools, and dried flowers, bright natural daylight, product photography for Dhaga Co.',
+        'Top-down shot of a handmade crochet décor piece on a light wooden shelf in a real indoor room, a small dried flower and another tiny crochet item beside it, soft warm light from a room lamp or window, the shelf and wall texture faintly visible, cozy home atmosphere.',
       sideView:
-        'Side-angle lifestyle shot of a crochet decorative piece (flower pot or wall hanging) displayed on a minimal shelf or table, warm background with soft bokeh, other small crochet décor items nearby, e-commerce product photography for Dhaga Co.',
+        'A handmade crochet décor piece displayed in its actual indoor home setting, side angle, resting on a wooden shelf or side table with a softly blurred living room behind it, warm natural light from a window, feels like a real home interior, not a studio.',
       frontView:
-        'Front-facing display of a crochet décor item on a small round wooden table, pastel wall behind, crochet blooms and woven accents styled around it, clean warm studio lighting, premium artisanal product photography for Dhaga Co.',
+        'Front-facing shot of a handmade crochet décor item placed on a wooden shelf against a soft white indoor wall, warm ambient room light, a small plant or dried stem beside it for natural styling, looks like a real home shelf, bright and inviting.',
     },
   },
   toys: {
     label: 'Toys & Dolls',
-    icon: '🧸',
+    icon: 'mdi:teddy-bear',
     description: 'Amigurumi bears, dolls, and plushies',
     prompts: {
       topView:
-        'Top-down flat-lay of a handmade crochet amigurumi bear or doll, arranged on a soft cream knit blanket with colourful yarn balls and tiny crochet stars around it, bright playful lighting, product photography for Dhaga Co.',
+        'Top-down shot of a handmade crochet amigurumi toy sitting on a light oak wooden table indoors, a crochet hook and a small ball of yarn placed beside it, soft daylight coming from a nearby window, warm and cozy home setting, the table grain visible, unposed and natural.',
       sideView:
-        'Side-angle shot of a cute crochet plush bear or doll sitting on a small wooden stool, soft pastel background, warm lifestyle lighting, small crochet accessories beside it, artisanal product photography for Dhaga Co.',
+        'A crochet plush toy sitting on a small wooden table in a bright indoor room, soft white wall in the background slightly out of focus, a crochet hook and a folded piece of fabric beside it, warm natural window light from the side, the toy the clear focus, homey and genuine atmosphere.',
       frontView:
-        'Front-facing hero shot of a handmade crochet toy (bear, bunny, or character doll) sitting upright on a clean surface, warm pastel background, soft even lighting, product photography that conveys handmade warmth and quality for Dhaga Co.',
+        'Front-facing shot of a handmade crochet stuffed toy placed on a light wooden table in a cozy indoor setting, a softly blurred warm room in the background, a crochet hook resting beside it, gentle natural light from the front, the toy sharp and centred, feels genuinely handmade and real.',
     },
   },
   bookCovers: {
     label: 'Book Covers',
-    icon: '📖',
+    icon: 'mdi:book-open-page-variant',
     description: 'Crochet-wrapped journals and notebooks',
     prompts: {
       topView:
-        'Top-down flat-lay of a crochet-covered journal or notebook on a warm linen surface, surrounded by dried flowers, crochet bookmarks, a pencil, and small motifs, bright natural overhead lighting, product photography for Dhaga Co.',
+        'Top-down flat-lay of a crochet-covered journal closed on a wooden desk indoors, a pen, a dried flower, and a small crochet bookmark beside it, warm natural daylight from a window, the desk surface texture visible, cozy and real study or bedroom setting.',
       sideView:
-        'Side profile of a handmade crochet book cover displayed open or closed on a rustic wooden surface, soft warm background, warm natural light from the side, other stationery and crochet items styled beside it, artisanal product photography for Dhaga Co.',
+        'Side profile of a crochet-covered journal propped upright on a wooden desk, showing the spine and the handmade texture of the cover, soft warm indoor light from the side, a blurred cozy room behind it, a pen resting beside it, real desk environment.',
       frontView:
-        'Front-facing display of a crochet journal cover propped up at a slight angle, warm cream background, small flowers and crochet details visible in the styling, soft front studio lighting, e-commerce product photography for Dhaga Co.',
+        'Front-facing shot of a crochet-covered notebook propped slightly on a wooden desk in a warm indoor room, soft natural light from a side window, a pen and dried flower beside it, the room softly blurred behind, the crochet cover in clear sharp focus, warm and real.',
     },
   },
   gajray: {
     label: 'Gajray',
-    icon: '💐',
-    description: 'Crochet floral hair garlands',
+    icon: 'mdi:flower-poppy',
+    description: 'Crochet floral garlands — hair & wrist',
     prompts: {
       topView:
-        'Top-down flat-lay of a handmade crochet gajray (floral hair garland) arranged in a gentle curve on a marble or cream surface, surrounded by fresh-looking petals and small crochet flower motifs, bright clean lighting, product photography for Dhaga Co.',
+        'Top-down flat-lay of a handmade crochet floral garland arranged in a gentle arc on a light wooden surface indoors, a few loose dried petals and small crochet flowers placed around it, soft warm daylight from a nearby window, natural and delicate indoor setting.',
       sideView:
-        'Side-angle shot of a crochet gajray worn in the hair of a model or placed draped around a small statue, bright warm background, natural soft lighting, lifestyle product photography for Dhaga Co.',
+        'A handmade crochet floral garland draped over a small wooden jewellery stand or decorative hook on a dressing table indoors, warm soft light from a nearby lamp or window, a mirror or soft blurred room behind it, the crochet flowers in clear detail, feminine and real vanity setting.',
       frontView:
-        'Front-facing display of a crochet gajray laid flat and centred on a soft floral surface, delicate lighting highlighting the handmade flower details, pastel or white background, e-commerce product photography for Dhaga Co.',
+        'Front-facing shot of a handmade crochet floral garland laid flat and centred on a light wooden dressing table, warm indoor room light, a softly blurred feminine room interior behind it, the individual crochet flower details sharp and clear, natural and graceful.',
     },
   },
 }
@@ -192,21 +193,70 @@ export async function generateImages(
     apiContext?.uploadedImage?.mimeType
 
   if (useRealApi) {
-    const provider = apiContext.apiProvider || 'gemini'
+    const provider = apiContext.apiProvider || PROVIDERS.GEMINI
     console.log(`[generateImages] Using Real API (${provider}) for`, activeShots)
-    
-    if (provider === 'openrouter') {
-      return generateWithOpenRouterApi(activeShots, customPrompts, onProgress, apiContext)
+
+    if (provider === PROVIDERS.OPENROUTER) {
+      const rawResults = await generateWithOpenRouterApi(activeShots, customPrompts, onProgress, apiContext)
+      return postProcessImages(rawResults)
     }
-    return generateWithGeminiApi(activeShots, customPrompts, onProgress, apiContext)
+    if (provider === PROVIDERS.PROXY) {
+      const rawResults = await generateWithProxyApi(activeShots, customPrompts, onProgress, apiContext)
+      return postProcessImages(rawResults)
+    }
+    const rawResults = await generateWithGeminiApi(activeShots, customPrompts, onProgress, apiContext)
+    return postProcessImages(rawResults)
   }
-  
-  console.warn('[generateImages] Falling back to MOCK images. Reason:', 
-    !apiContext?.apiKey ? 'Missing API Key' : 
+
+  console.warn('[generateImages] Falling back to MOCK images. Reason:',
+    !apiContext?.apiKey ? 'Missing API Key' :
     !apiContext?.uploadedImage ? 'Missing Uploaded Image' : 'Incomplete apiContext'
   )
-  return generateMock(activeShots, customPrompts, onProgress)
+  const mockResults = await generateMock(activeShots, customPrompts, onProgress)
+  return postProcessImages(mockResults)
 }
+
+/**
+ * Post-processes generated images: resizes to 600px and converts to WebP.
+ * This ensures "high resolution" images are never stored on the frontend.
+ */
+async function postProcessImages(images) {
+  const { compressImage, dataURLtoFile } = await import('@/features/gallery-export/services/imageCompression')
+  
+  const processed = await Promise.all(images.map(async (img) => {
+    // If it's a proxy result or gemini result, it's a dataUrl
+    // If it's a mock result, it might be a picsum URL (handle both)
+    let file
+    if (img.url.startsWith('data:')) {
+      file = dataURLtoFile(img.url, `${img.shotType}.png`)
+    } else {
+      // For mock URLs, we fetch them first
+      const res = await fetch(img.url)
+      const blob = await res.blob()
+      file = new File([blob], `${img.shotType}.png`, { type: blob.type })
+    }
+
+    const compressedFile = await compressImage(file)
+    
+    // Convert compressed file back to dataURL
+    const reader = new FileReader()
+    const compressedUrl = await new Promise((resolve) => {
+      reader.onload = () => resolve(reader.result)
+      reader.readAsDataURL(compressedFile)
+    })
+
+    return {
+      ...img,
+      url: compressedUrl,
+      resolution: '600 × 600 (Optimized)',
+      format: 'WebP',
+      size: `${(compressedFile.size / 1024).toFixed(1)} KB`
+    }
+  }))
+
+  return processed
+}
+
 
 // ─────────────────────────────────────────────
 // REAL GEMINI GENERATION
@@ -282,6 +332,52 @@ async function generateWithOpenRouterApi(activeShots, customPrompts, onProgress,
       url: generatedDataUrl,
       size: 'AI Generated',
       resolution: 'OpenRouter Output',
+      format: 'PNG',
+      createdAt: new Date().toISOString(),
+    })
+
+    onProgress(Math.round(((i + 1) / total) * 95))
+  }
+
+  onProgress(100)
+  return results
+}
+
+// ─────────────────────────────────────────────
+// VERTEX AI PROXY GENERATION
+// ─────────────────────────────────────────────
+async function generateWithProxyApi(activeShots, customPrompts, onProgress, apiContext) {
+  const { generateViaProxy } = await import('@/features/api-auth/services/proxyService.js')
+  const results = []
+  const total = activeShots.length
+
+  for (let i = 0; i < total; i++) {
+    const shotKey = activeShots[i]
+    const angleMeta = SHOT_ANGLES[shotKey]
+    const prompt = customPrompts[shotKey] || ''
+
+    onProgress(Math.round((i / total) * 90))
+
+    const images = await generateViaProxy({
+      proxyUrl: apiContext.proxyUrl,
+      secretKey: apiContext.apiKey,
+      prompt,
+      base64Image: apiContext.uploadedImage.base64,
+      mimeType: apiContext.uploadedImage.mimeType,
+    })
+
+    const first = images[0]
+    if (!first) throw new Error(`Proxy returned no image for shot: ${shotKey}`)
+
+    results.push({
+      id: `${shotKey}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      shotType: shotKey,
+      shotLabel: angleMeta.label,
+      name: `${angleMeta.label} — Vertex AI (Imagen)`,
+      prompt,
+      url: first.dataUrl,
+      size: 'AI Generated',
+      resolution: 'Imagen Output',
       format: 'PNG',
       createdAt: new Date().toISOString(),
     })

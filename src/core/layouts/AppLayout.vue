@@ -12,9 +12,9 @@ const router = useRouter()
 const currentStep = computed(() => route.meta?.step || 1)
 
 const steps = [
-  { number: 1, label: 'Step 1: Gateway', name: 'gateway', icon: '🔑' },
-  { number: 2, label: 'Step 2: Studio', name: 'studio', icon: '🎨' },
-  { number: 3, label: 'Step 3: Gallery', name: 'gallery', icon: '🖼️' },
+  { number: 1, label: 'Step 1: Gateway', name: 'gateway', icon: 'mdi:key' },
+  { number: 2, label: 'Step 2: Studio', name: 'studio', icon: 'mdi:palette' },
+  { number: 3, label: 'Step 3: Gallery', name: 'gallery', icon: 'mdi:image' },
 ]
 
 function navigateToStep(step) {
@@ -37,10 +37,10 @@ function navigateToStep(step) {
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
             >
-              <rect width="24" height="24" rx="6" fill="#0070f3" />
+              <rect width="24" height="24" rx="6" fill="var(--color-primary)" />
               <path
                 d="M7 12L10.5 15.5L17 8.5"
-                stroke="white"
+                stroke="var(--color-on-primary)"
                 stroke-width="2"
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -96,14 +96,15 @@ function navigateToStep(step) {
   position: sticky;
   top: 0;
   z-index: 50;
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--color-border);
+  background: rgba(29, 32, 36, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 4px 20px -10px rgba(0, 0, 0, 0.5);
 }
 
 .header-inner {
-  max-width: 1400px;
+  max-width: 1800px;
   margin: 0 auto;
   padding: 0 var(--spacing-gutter);
   height: 56px;
@@ -160,16 +161,16 @@ function navigateToStep(step) {
 
 .step-btn:hover {
   color: var(--color-text-secondary);
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--color-surface-low);
 }
 
 .step-btn--active {
   color: var(--color-text-primary);
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--color-surface-container);
 }
 
 .step-btn--completed {
-  color: var(--color-electric);
+  color: var(--color-primary);
 }
 
 .step-indicator {
@@ -186,15 +187,15 @@ function navigateToStep(step) {
 }
 
 .step-btn--active .step-indicator {
-  background: var(--color-electric);
-  border-color: var(--color-electric);
-  color: #fff;
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-on-primary);
 }
 
 .step-btn--completed .step-indicator {
-  background: rgba(0, 112, 243, 0.15);
-  border-color: var(--color-electric);
-  color: var(--color-electric);
+  background: var(--color-primary-container);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 
 .check-icon {
@@ -217,7 +218,7 @@ function navigateToStep(step) {
 
 .app-main {
   flex: 1;
-  max-width: 1400px;
+  max-width: 1800px;
   width: 100%;
   margin: 0 auto;
   padding: var(--spacing-gutter);

@@ -9,11 +9,13 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '@/core/store/appStore'
+import { Icon } from '@iconify/vue'
 import {
   generateImages,
   getAllShotTypes,
   PRODUCT_CATEGORIES,
 } from '../services/generateImages'
+import { PROVIDER_LABELS, PROVIDER_COLORS } from '@/features/api-auth/constants'
 import ShotToggleCard from '../components/ShotToggleCard.vue'
 import ImageUploader from '../components/ImageUploader.vue'
 
@@ -28,9 +30,9 @@ const progress = ref(0)
 const generationError = ref('')
 
 const shotIcons = {
-  topView: '🔝',
-  sideView: '↔️',
-  frontView: '📸',
+  topView: 'mdi:arrow-up-bold',
+  sideView: 'mdi:arrow-left-right-bold',
+  frontView: 'mdi:camera',
 }
 
 const categories = Object.entries(PRODUCT_CATEGORIES).map(([key, meta]) => ({
@@ -42,6 +44,15 @@ const categories = Object.entries(PRODUCT_CATEGORIES).map(([key, meta]) => ({
 
 const hasImage = computed(() => !!store.state.uploadedImage)
 const activeCount = computed(() => store.getActiveShots().length)
+
+// Provider badge
+const providerLabel = computed(() => PROVIDER_LABELS[store.state.apiProvider] || store.state.apiProvider)
+const providerStyle = computed(() => {
+  const c = PROVIDER_COLORS[store.state.apiProvider]
+  return c
+    ? { color: c.color, background: c.bg, borderColor: c.border }
+    : {}
+})
 
 // Generate is only possible when: image uploaded + at least one shot active
 const canGenerate = computed(() => hasImage.value && activeCount.value > 0 && !isGenerating.value)
@@ -81,19 +92,20 @@ async function handleGenerate() {
     const apiContext =
       store.state.isAuthenticated && store.state.uploadedImage
         ? {
-            apiKey: store.state.apiKey,
-            apiProvider: store.state.apiProvider,
-            uploadedImage: {
-              base64: store.state.uploadedImage.base64,
-              mimeType: store.state.uploadedImage.mimeType,
-            },
-          }
+          apiKey: store.state.apiKey,
+          apiProvider: store.state.apiProvider,
+          proxyUrl: store.state.proxyUrl,
+          uploadedImage: {
+            base64: store.state.uploadedImage.base64,
+            mimeType: store.state.uploadedImage.mimeType,
+          },
+        }
         : null
 
-    console.log('[StudioView] apiContext prepared:', { 
+    console.log('[StudioView] apiContext prepared:', {
       hasContext: !!apiContext,
       isAuthenticated: store.state.isAuthenticated,
-      hasImage: !!store.state.uploadedImage 
+      hasImage: !!store.state.uploadedImage
     })
 
     const images = await generateImages(
@@ -130,10 +142,18 @@ async function handleGenerate() {
         </p>
       </div>
 
-      <!-- Upload status pill -->
-      <div class="upload-status-pill" :class="hasImage ? 'pill--ready' : 'pill--waiting'">
-        <span class="pill-dot"></span>
-        <span>{{ hasImage ? 'Product image ready' : 'Awaiting product image' }}</span>
+      <div class="header-pills">
+        <!-- Provider badge -->
+        <div v-if="store.state.isAuthenticated" class="provider-badge" :style="providerStyle">
+          <span class="provider-dot"></span>
+          <span>{{ providerLabel }}</span>
+        </div>
+
+        <!-- Upload status pill -->
+        <div class="upload-status-pill" :class="hasImage ? 'pill--ready' : 'pill--waiting'">
+          <span class="pill-dot"></span>
+          <span>{{ hasImage ? 'Product image ready' : 'Awaiting product image' }}</span>
+        </div>
       </div>
     </div>
 
@@ -147,19 +167,10 @@ async function handleGenerate() {
         </div>
 
         <div class="shot-cards-list">
-          <ShotToggleCard
-            v-for="shot in shotTypes"
-            :key="shot.key"
-            :shot-key="shot.key"
-            :label="shot.label"
-            :description="shot.description"
-            :prompt="store.state.customPrompts[shot.key]"
-            :active="store.state.shotToggles[shot.key]"
-            :icon="shotIcons[shot.key]"
-            @toggle="handleToggle"
-            class="animate-fade-in"
-            :class="`delay-${shotTypes.indexOf(shot) + 1}`"
-          />
+          <ShotToggleCard v-for="shot in shotTypes" :key="shot.key" :shot-key="shot.key" :label="shot.label"
+            :description="shot.description" :prompt="store.state.customPrompts[shot.key]"
+            :active="store.state.shotToggles[shot.key]" :icon="shotIcons[shot.key]" @toggle="handleToggle"
+            class="animate-fade-in" :class="`delay-${shotTypes.indexOf(shot) + 1}`" />
         </div>
 
         <!-- Volume Summary -->
@@ -175,14 +186,17 @@ async function handleGenerate() {
           <div class="volume-row">
             <span class="volume-label">Category</span>
             <span class="volume-value category-value">
-              {{ PRODUCT_CATEGORIES[store.state.selectedCategory]?.icon }}
+              <Icon :icon="PRODUCT_CATEGORIES[store.state.selectedCategory]?.icon" class="inline-icon"
+                style="font-size: 1.2em; vertical-align: middle;" />
               {{ PRODUCT_CATEGORIES[store.state.selectedCategory]?.label }}
             </span>
           </div>
           <div class="volume-row">
             <span class="volume-label">Image</span>
             <span class="volume-value" :class="hasImage ? 'status-ready' : 'status-missing'">
-              {{ hasImage ? '✓ Uploaded' : '✗ Required' }}
+              <Icon :icon="hasImage ? 'mdi:check-circle' : 'mdi:alert-circle'" class="inline-icon"
+                style="vertical-align: middle; margin-right: 4px;" />
+              {{ hasImage ? 'Uploaded' : 'Required' }}
             </span>
           </div>
         </div>
@@ -195,10 +209,7 @@ async function handleGenerate() {
           <span class="center-required">Required to generate</span>
         </div>
         <div class="upload-card">
-          <ImageUploader
-            @uploaded="handleImageUploaded"
-            @cleared="handleImageCleared"
-          />
+          <ImageUploader @uploaded="handleImageUploaded" @cleared="handleImageCleared" />
         </div>
       </section>
 
@@ -209,15 +220,10 @@ async function handleGenerate() {
           <h3 class="control-heading">Product Category</h3>
           <p class="control-subheading">Select your item type — prompts update automatically.</p>
           <div class="category-grid">
-            <button
-              v-for="cat in categories"
-              :key="cat.key"
-              class="category-chip"
+            <button v-for="cat in categories" :key="cat.key" class="category-chip"
               :class="{ 'category-chip--active': store.state.selectedCategory === cat.key }"
-              @click="selectCategory(cat.key)"
-              :title="cat.description"
-            >
-              <span class="cat-icon">{{ cat.icon }}</span>
+              @click="selectCategory(cat.key)" :title="cat.description">
+              <Icon :icon="cat.icon" class="cat-icon" />
               <span class="cat-label">{{ cat.label }}</span>
             </button>
           </div>
@@ -228,20 +234,11 @@ async function handleGenerate() {
           <h3 class="control-heading">Multi-Angle Prompts</h3>
           <p class="control-subheading">Edit to fine-tune each shot before generating.</p>
           <div class="prompt-fields">
-            <div
-              v-for="shot in shotTypes"
-              :key="shot.key"
-              class="prompt-field-group"
-              :class="{ 'prompt-field-group--disabled': !store.state.shotToggles[shot.key] }"
-            >
+            <div v-for="shot in shotTypes" :key="shot.key" v-show="store.state.shotToggles[shot.key]"
+              class="prompt-field-group">
               <label class="typo-label">{{ shot.label }} Prompt</label>
-              <textarea
-                class="prompt-textarea"
-                :value="store.state.customPrompts[shot.key]"
-                :disabled="!store.state.shotToggles[shot.key]"
-                rows="3"
-                @input="handlePromptEdit(shot.key, $event)"
-              ></textarea>
+              <textarea class="prompt-textarea" :value="store.state.customPrompts[shot.key]" rows="6"
+                @input="handlePromptEdit(shot.key, $event)"></textarea>
             </div>
           </div>
         </div>
@@ -264,9 +261,7 @@ async function handleGenerate() {
         <!-- Generate Error -->
         <Transition name="slide-fade">
           <div v-if="generationError" class="gen-error">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" />
-            </svg>
+            <Icon icon="mdi:alert-circle-outline" width="16" height="16" />
             {{ generationError }}
           </div>
         </Transition>
@@ -281,12 +276,7 @@ async function handleGenerate() {
             Select a shot angle on the left
           </p>
 
-          <button
-            id="generate-btn"
-            class="btn-primary generate-btn"
-            :disabled="!canGenerate"
-            @click="handleGenerate"
-          >
+          <button id="generate-btn" class="btn-primary generate-btn" :disabled="!canGenerate" @click="handleGenerate">
             <template v-if="isGenerating">
               <div class="progress-bar-container">
                 <div class="progress-bar" :style="{ width: progress + '%' }"></div>
@@ -294,16 +284,7 @@ async function handleGenerate() {
               <span>Generating... {{ progress }}%</span>
             </template>
             <template v-else>
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <polygon points="5 3 19 12 5 21 5 3" />
-              </svg>
+              <Icon icon="mdi:play" width="18" height="18" />
               <span>Generate Images</span>
             </template>
           </button>
@@ -326,6 +307,49 @@ async function handleGenerate() {
   justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
+}
+
+.header-pills {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+/* Provider Badge */
+.provider-badge {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 13px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid;
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+}
+
+.provider-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 6px currentColor;
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.4;
+  }
 }
 
 .studio-title {
@@ -380,9 +404,9 @@ async function handleGenerate() {
 /* Grid Layout */
 .studio-grid {
   display: grid;
-  grid-template-columns: 280px 1fr 340px;
+  grid-template-columns: 0.8fr 1.7fr 1fr;
   gap: 24px;
-  align-items: start;
+  align-items: stretch;
 }
 
 @media (max-width: 1200px) {
@@ -397,8 +421,6 @@ async function handleGenerate() {
   flex-direction: column;
   gap: 16px;
 }
-
-.sidebar-section {}
 
 .sidebar-heading {
   font-size: 15px;
@@ -432,7 +454,7 @@ async function handleGenerate() {
   padding: 7px 0;
 }
 
-.volume-row + .volume-row {
+.volume-row+.volume-row {
   border-top: 1px solid var(--color-border);
 }
 
@@ -449,7 +471,7 @@ async function handleGenerate() {
 
 .category-value {
   font-size: 12px;
-  color: var(--color-electric);
+  color: var(--color-primary);
   text-align: right;
   max-width: 130px;
   line-height: 1.3;
@@ -486,15 +508,15 @@ async function handleGenerate() {
 
 .center-required {
   font-size: 11px;
-  font-weight: 500;
-  color: var(--color-electric);
-  background: rgba(0, 112, 243, 0.08);
+  font-weight: 600;
+  color: var(--color-primary);
+  background: var(--color-primary-container);
   padding: 3px 10px;
   border-radius: var(--radius-full);
 }
 
 .upload-card {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--color-surface-container);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
   padding: 20px;
@@ -509,14 +531,13 @@ async function handleGenerate() {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  overflow-y: auto;
-  max-height: calc(100vh - 160px);
   padding-right: 2px;
+  min-height: calc(100vh - 160px);
 }
 
 .control-section {
   padding: 18px 20px;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--color-surface-container);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
 }
@@ -567,10 +588,9 @@ async function handleGenerate() {
 }
 
 .category-chip--active {
-  background: rgba(0, 112, 243, 0.08);
-  border-color: rgba(0, 112, 243, 0.35);
-  color: var(--color-text-primary);
-  box-shadow: 0 0 0 1px rgba(0, 112, 243, 0.15) inset;
+  background: var(--color-primary-container);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 
 .cat-icon {
@@ -664,9 +684,24 @@ async function handleGenerate() {
 
 /* Generate wrap + hint */
 .generate-wrap {
+  position: sticky;
+  bottom: 24px;
+  margin-top: auto;
+  z-index: 100;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  background: var(--color-canvas);
+  padding: 16px;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
+}
+
+@media (max-width: 1200px) {
+  .generate-wrap {
+    width: 100%;
+  }
 }
 
 .generate-hint {
@@ -702,7 +737,17 @@ async function handleGenerate() {
 }
 
 /* Transition */
-.slide-fade-enter-active { transition: all 0.3s ease; }
-.slide-fade-leave-active { transition: all 0.2s ease; }
-.slide-fade-enter-from, .slide-fade-leave-to { opacity: 0; transform: translateY(-6px); }
+.slide-fade-enter-active {
+  transition: all 0.3s ease;
+}
+
+.slide-fade-leave-active {
+  transition: all 0.2s ease;
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
+}
 </style>

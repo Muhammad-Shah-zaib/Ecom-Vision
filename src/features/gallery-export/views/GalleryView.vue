@@ -4,23 +4,50 @@
  * Displays generated images in a responsive grid.
  * Provides individual download buttons and a master "Download All" (ZIP).
  */
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '@/core/store/appStore'
 import { downloadAllAsZip } from '../services/downloadService'
+import { PROVIDER_LABELS, PROVIDER_COLORS } from '@/features/api-auth/constants'
+import { Icon } from '@iconify/vue'
 import ImageCard from '../components/ImageCard.vue'
+import AddProductForm from '../components/AddProductForm.vue'
+import { validateSecretKey } from '../services/storeService'
 
 const router = useRouter()
 const store = useAppStore()
 
 const isDownloadingAll = ref(false)
 const downloadProgress = ref(0)
+const showAddProductModal = ref(false)
+const secretKey = ref(localStorage.getItem('dhaga-store-key') || '')
+const isKeyValid = ref(false)
 
 const images = computed(() => store.state.generatedImages)
 const batchId = computed(() => store.state.batchId || '#0000')
 const imageCount = computed(() => images.value.length)
-
 const hasImages = computed(() => images.value.length > 0)
+
+const providerLabel = computed(() => PROVIDER_LABELS[store.state.apiProvider] || store.state.apiProvider)
+const providerStyle = computed(() => {
+  const c = PROVIDER_COLORS[store.state.apiProvider]
+  return c ? { color: c.color, background: c.bg, borderColor: c.border } : {}
+})
+
+onMounted(async () => {
+  if (secretKey.value) {
+    isKeyValid.value = await validateSecretKey(secretKey.value)
+  }
+})
+
+async function handleKeyChange() {
+  localStorage.setItem('dhaga-store-key', secretKey.value)
+  if (secretKey.value) {
+    isKeyValid.value = await validateSecretKey(secretKey.value)
+  } else {
+    isKeyValid.value = false
+  }
+}
 
 async function handleDownloadAll() {
   if (isDownloadingAll.value || !hasImages.value) return
@@ -48,6 +75,13 @@ function handleNewBatch() {
   store.resetPipeline()
   router.push({ name: 'studio' })
 }
+
+function handlePushSuccess() {
+  showAddProductModal.value = false
+  // Optionally show a toast or notification here
+  alert('Product pushed to store successfully!')
+}
+
 </script>
 
 <template>
@@ -58,29 +92,37 @@ function handleNewBatch() {
         <div class="header-title-row">
           <h1 class="gallery-title">Generation Batch {{ batchId }}</h1>
           <span class="image-count-badge">{{ imageCount }} Images</span>
+          <div v-if="hasImages" class="provider-badge" :style="providerStyle">
+            <span class="provider-dot"></span>
+            <span>{{ providerLabel }}</span>
+          </div>
         </div>
         <p class="gallery-subtitle">
           Review your AI-generated product shots below. Hover on any image to instantly compare the
           result with your original raw upload.
         </p>
       </div>
+
+      <div class="header-right">
+        <div class="secret-key-section">
+          <div class="key-input-wrapper">
+            <Icon icon="mdi:key-variant" class="key-icon" :class="{ 'is-valid': isKeyValid }" />
+            <input 
+              v-model="secretKey" 
+              type="password" 
+              placeholder="Store Secret Key..." 
+              @input="handleKeyChange"
+            />
+          </div>
+          <span v-if="secretKey && !isKeyValid" class="key-error">Invalid Key</span>
+        </div>
+      </div>
     </div>
 
     <!-- No Images State -->
     <div v-if="!hasImages" class="empty-state">
       <div class="empty-icon">
-        <svg
-          width="64"
-          height="64"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="var(--color-outline-variant)"
-          stroke-width="0.8"
-        >
-          <rect x="3" y="3" width="18" height="18" rx="2" />
-          <circle cx="8.5" cy="8.5" r="1.5" />
-          <polyline points="21 15 16 10 5 21" />
-        </svg>
+        <Icon icon="mdi:image-off-outline" width="64" height="64" style="color: var(--color-outline-variant)" />
       </div>
       <h3 class="empty-title">No images generated yet</h3>
       <p class="empty-desc">
@@ -105,62 +147,51 @@ function handleNewBatch() {
       <!-- Bottom Actions Bar -->
       <div class="gallery-actions">
         <div class="actions-info">
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="var(--color-electric)"
-            stroke-width="2"
-          >
-            <circle cx="12" cy="12" r="10" />
-            <polyline points="12 6 12 12 16 14" />
-          </svg>
+          <Icon icon="mdi:clock-outline" width="16" height="16" style="color: var(--color-electric)" />
           <span class="actions-text">
             All {{ imageCount }} images successfully generated and saved to your workspace.
           </span>
         </div>
         <div class="actions-buttons">
           <button class="btn-secondary" @click="handleNewBatch">
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <polyline points="1 4 1 10 7 10" />
-              <path d="M3.51 15a9 9 0 102.13-9.36L1 10" />
-            </svg>
+            <Icon icon="mdi:refresh" width="16" height="16" />
             <span>New Batch</span>
           </button>
+          
+          <button
+            v-if="isKeyValid"
+            class="btn-primary btn-push"
+            @click="showAddProductModal = true"
+          >
+            <Icon icon="mdi:cloud-upload" width="16" height="16" />
+            <span>Push to Store</span>
+          </button>
+
           <button
             id="download-all-btn"
-            class="btn-primary"
+            class="btn-secondary"
             :disabled="isDownloadingAll"
             @click="handleDownloadAll"
           >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-              <polyline points="7 10 12 15 17 10" />
-              <line x1="12" y1="15" x2="12" y2="3" />
-            </svg>
+            <Icon icon="mdi:download" width="16" height="16" />
             <span v-if="isDownloadingAll">Downloading... {{ downloadProgress }}%</span>
             <span v-else>Download All (ZIP)</span>
           </button>
         </div>
       </div>
     </div>
+
+    <!-- Add Product Modal -->
+    <AddProductForm
+      v-if="showAddProductModal"
+      :generated-images="images"
+      :secret-key="secretKey"
+      @close="showAddProductModal = false"
+      @success="handlePushSuccess"
+    />
   </div>
 </template>
+
 
 <style scoped>
 .gallery-view {
@@ -169,7 +200,76 @@ function handleNewBatch() {
 
 .gallery-header {
   margin-bottom: 32px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
 }
+
+.header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.secret-key-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.key-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.key-icon {
+  position: absolute;
+  left: 12px;
+  color: var(--color-text-muted);
+  transition: color 0.3s;
+}
+
+.key-icon.is-valid {
+  color: var(--color-success);
+}
+
+.secret-key-section input {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 10px 14px;
+  padding-left: 38px;
+  color: var(--color-text-primary);
+  font-size: 13px;
+  width: 240px;
+  transition: all 0.2s;
+}
+
+.secret-key-section input:focus {
+  border-color: var(--color-electric);
+  outline: none;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.key-error {
+  font-size: 11px;
+  color: var(--color-error);
+  margin-right: 4px;
+}
+
+.btn-push {
+  background: var(--color-electric);
+  color: white;
+  box-shadow: 0 4px 14px rgba(var(--color-electric-rgb), 0.3);
+}
+
+.btn-push:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(var(--color-electric-rgb), 0.4);
+}
+
 
 .header-title-row {
   display: flex;
@@ -200,6 +300,28 @@ function handleNewBatch() {
   margin-top: 8px;
   max-width: 600px;
   line-height: 1.6;
+}
+
+/* Provider Badge */
+.provider-badge {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid;
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+}
+
+.provider-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 6px currentColor;
 }
 
 /* Empty State */

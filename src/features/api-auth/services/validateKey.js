@@ -1,25 +1,36 @@
 /**
  * API Key Validation Service
  * For Gemini: performs a real connectivity check against the Gemini API.
- * For OpenRouter: mock validation (length check only).
+ * For OpenRouter: validates via their /auth/key endpoint.
+ * For Proxy: delegates to proxyService.validateProxyKey.
  */
 import { verifyGeminiKey } from '@/features/studio-generation/services/geminiService'
+import { validateProxyKey } from './proxyService'
+import { PROVIDERS } from '../constants'
 
 /**
- * Validate an API key.
- * @param {string} key - The API key
- * @param {string} provider - 'gemini' | 'openrouter'
+ * Validate an API key or secret key.
+ * @param {string} key         - The API key or proxy secret key
+ * @param {string} provider    - 'gemini' | 'openrouter' | 'proxy'
+ * @param {string} [proxyUrl]  - Required when provider === 'proxy'
  * @returns {Promise<{ valid: boolean, message: string }>}
  */
-export async function validateApiKey(key, provider = 'gemini') {
+export async function validateApiKey(key, provider = PROVIDERS.GEMINI, proxyUrl = '') {
   if (!key || key.trim().length < 8) {
     return {
       valid: false,
-      message: 'API key is too short. Please enter a valid key.',
+      message: 'Key is too short. Please enter a valid key.',
     }
   }
 
-  if (provider === 'gemini') {
+  if (provider === PROVIDERS.PROXY) {
+    if (!proxyUrl) {
+      return { valid: false, message: 'Proxy URL is required.' }
+    }
+    return validateProxyKey(proxyUrl.trim(), key.trim())
+  }
+
+  if (provider === PROVIDERS.GEMINI) {
     try {
       await verifyGeminiKey(key.trim())
       return { valid: true, message: 'Successfully connected to Google Gemini API.' }

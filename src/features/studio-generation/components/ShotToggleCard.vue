@@ -4,6 +4,7 @@
  * Displays shot type info, description, and an ON/OFF toggle.
  */
 import { computed } from 'vue'
+import { Icon } from '@iconify/vue'
 
 const props = defineProps({
   shotKey: { type: String, required: true },
@@ -11,7 +12,7 @@ const props = defineProps({
   description: { type: String, default: '' },
   prompt: { type: String, default: '' },
   active: { type: Boolean, default: false },
-  icon: { type: String, default: '📷' },
+  icon: { type: String, default: 'mdi:camera' },
 })
 
 const emit = defineEmits(['toggle'])
@@ -23,7 +24,7 @@ const statusText = computed(() => (props.active ? 'Active' : 'Inactive'))
   <div class="shot-card" :class="{ 'shot-card--active': active }" @click="emit('toggle', shotKey)">
     <!-- Card Header -->
     <div class="shot-card-header">
-      <div class="shot-icon">{{ icon }}</div>
+      <div class="shot-icon"><Icon :icon="icon" /></div>
       <div class="shot-info">
         <span class="shot-label">{{ label }}</span>
         <span class="shot-desc">{{ description }}</span>
@@ -51,7 +52,7 @@ const statusText = computed(() => (props.active ? 'Active' : 'Inactive'))
 <style scoped>
 .shot-card {
   padding: 20px;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--color-surface-container);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   cursor: pointer;
@@ -65,12 +66,17 @@ const statusText = computed(() => (props.active ? 'Active' : 'Inactive'))
 }
 
 .shot-card--active {
-  border-color: rgba(0, 112, 243, 0.3);
-  background: rgba(0, 112, 243, 0.04);
+  border-color: var(--color-primary);
+  background: var(--color-primary-container);
+}
+
+.shot-card--active .shot-label {
+  color: var(--color-primary);
 }
 
 .shot-card--active:hover {
-  border-color: rgba(0, 112, 243, 0.5);
+  background: var(--color-primary-container);
+  opacity: 1;
 }
 
 .shot-card-header {
@@ -123,13 +129,13 @@ const statusText = computed(() => (props.active ? 'Active' : 'Inactive'))
 }
 
 .toggle-switch--on {
-  background: var(--color-electric);
+  background: var(--color-primary);
 }
 
 .toggle-knob {
   width: 20px;
   height: 20px;
-  background: #fff;
+  background: var(--color-on-primary);
   border-radius: 50%;
   transition: transform 0.25s ease;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
@@ -172,8 +178,8 @@ const statusText = computed(() => (props.active ? 'Active' : 'Inactive'))
 }
 
 .status-dot--active {
-  background: #22c55e;
-  box-shadow: 0 0 6px rgba(34, 197, 94, 0.4);
+  background: #10b981;
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.4);
 }
 
 .status-text {

@@ -7,6 +7,7 @@
  */
 import { ref, computed } from 'vue'
 import { compressProductImage, parseDataUrl, formatBytes } from '../services/imageCompression'
+import { Icon } from '@iconify/vue'
 
 const emit = defineEmits(['uploaded', 'cleared'])
 
@@ -134,16 +135,12 @@ function clearImage() {
 
         <!-- Clear button -->
         <button class="clear-btn" @click="clearImage" title="Remove image">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
+          <Icon icon="mdi:close" width="16" height="16" stroke-width="2.5" />
         </button>
 
         <!-- Compression badge -->
         <div v-if="imageMeta?.wasCompressed" class="compressed-badge">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
+          <Icon icon="mdi:check-bold" width="12" height="12" />
           Compressed
         </div>
       </div>
@@ -182,11 +179,7 @@ function clearImage() {
       @click="openFilePicker"
     >
       <div class="drop-icon">
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
-          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-          <polyline points="17 8 12 3 7 8" />
-          <line x1="12" y1="3" x2="12" y2="15" />
-        </svg>
+        <Icon icon="mdi:upload-outline" width="40" height="40" />
       </div>
       <p class="drop-title">
         <span v-if="isDragging">Drop your product image here</span>
@@ -202,9 +195,7 @@ function clearImage() {
     <!-- Error -->
     <Transition name="slide-fade">
       <div v-if="uploadError" class="upload-error">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" />
-        </svg>
+        <Icon icon="mdi:alert-circle-outline" width="16" height="16" />
         {{ uploadError }}
       </div>
     </Transition>

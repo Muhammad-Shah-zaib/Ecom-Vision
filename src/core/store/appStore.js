@@ -17,6 +17,7 @@ function saveState(data) {
     const toSave = {
       apiKey: data.apiKey,
       apiProvider: data.apiProvider,
+      proxyUrl: data.proxyUrl,
       isAuthenticated: data.isAuthenticated,
     }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave))
@@ -40,6 +41,7 @@ const state = reactive({
   // ── Step 1: API Auth ──
   apiKey: savedState.apiKey || '',
   apiProvider: savedState.apiProvider || 'gemini',
+  proxyUrl: savedState.proxyUrl || 'http://localhost:4000',
   isAuthenticated: savedState.isAuthenticated || false,
 
   // ── Step 2: Studio ──
@@ -73,6 +75,11 @@ function setApiProvider(provider) {
   saveState(state)
 }
 
+function setProxyUrl(url) {
+  state.proxyUrl = url
+  saveState(state)
+}
+
 function setAuthenticated(value) {
   state.isAuthenticated = value
   saveState(state)
@@ -80,10 +87,7 @@ function setAuthenticated(value) {
 
 function toggleShot(shotKey) {
   if (state.shotToggles[shotKey] !== undefined) {
-    // Act like a radio button: only the clicked one is true, others are false
-    Object.keys(state.shotToggles).forEach(k => {
-      state.shotToggles[k] = (k === shotKey)
-    })
+    state.shotToggles[shotKey] = !state.shotToggles[shotKey]
   }
 }
 
@@ -130,9 +134,9 @@ function clearUploadedImage() {
 
 function resetPipeline() {
   state.shotToggles = {
-    topView: true,
+    topView: false,
     sideView: false,
-    frontView: false,
+    frontView: true,
   }
   state.isGenerating = false
   state.generatedImages = []
@@ -147,6 +151,7 @@ export function useAppStore() {
     state: readonly(state),
     setApiKey,
     setApiProvider,
+    setProxyUrl,
     setAuthenticated,
     toggleShot,
     setShotToggle,
