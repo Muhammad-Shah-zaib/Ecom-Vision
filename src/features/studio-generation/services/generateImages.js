@@ -1,104 +1,113 @@
 /**
  * Image Generation Service — Dhaga Co. Crochet Studio
- * Category-aware prompt system for artisanal handmade product photography.
- * Each category carries per-angle prompts crafted for small-batch crochet items.
+ * Consolidated category-aware prompt system for artisanal handmade product photography.
+ * Each category carries per-angle smart prompts that instruct the AI to analyse the
+ * uploaded product image and choose contextually fitting companion props & backgrounds.
  */
 import { PROVIDERS } from '@/features/api-auth/constants'
 
 // ─────────────────────────────────────────────
 // PRODUCT CATEGORIES — Dhaga Co.
-// Each category defines: label, icon, and per-angle prompts (top / side / front)
+// Each category: label, icon, description, and per-angle SMART prompts.
+// The AI sees the uploaded product photo and decides props + background automatically.
 // ─────────────────────────────────────────────
 export const PRODUCT_CATEGORIES = {
+
   jerseys: {
     label: 'Jerseys & Jackets',
     icon: 'mdi:tshirt-crew',
     description: 'Crochet tops, cardigans, and outerwear',
     prompts: {
       topView:
-        'Flat-lay of a handmade crochet jersey laid on a light wooden floor, soft diffused indoor light with no harsh brightness, a small crochet bunny tucked beside it, a crochet flower motif and a spool of yarn scattered naturally around, shot from directly above, warm and cozy room feel, looks like a real candid home photo.',
+        'Flat-lay photograph taken from directly above of this exact handmade crochet garment laid neatly on a light natural wooden floor indoors. Study the garment\'s colour palette and style, then place one small handmade crochet companion item beside it that visually complements it — for example a tiny crochet animal, flower motif, or miniature accessory that matches or harmonises with the garment\'s yarn colours. Add a spool of yarn in a toning shade and one or two subtle natural accents such as a dried sprig or a small wooden button scattered casually nearby. Soft diffused warm indoor light with absolutely no harsh highlights or direct sunlight. The wooden floor grain is faintly visible. The entire scene must feel like a genuine, unposed, cozy home flat-lay — never a studio setup. The garment is the clear hero; companion props support but never compete.',
       sideView:
-        'A handmade crochet jersey hanging on a simple wooden hanger on a wall hook, soft warm ambient indoor lighting with no direct sunlight, a small crochet bunny sitting on a nearby wooden ledge, a tiny crochet flower hanging loosely from the hanger, the wall behind has a natural matte texture, feels like a real lived-in room, photographed from a gentle side angle.',
+        'This exact handmade crochet garment hanging on a simple wooden hanger from a wall hook in a real lived-in indoor room, photographed from a gentle three-quarter side angle. Study the garment\'s colour palette and texture, then place one small handmade crochet companion item on a nearby wooden ledge or shelf — choose something that complements the garment\'s colours, such as a tiny crochet animal, flower, or decorative motif. The wall behind has a soft natural matte texture in a warm neutral tone. Warm ambient indoor lighting with no direct sunlight and no harsh shadows. A hint of a cozy room interior softly blurred in the background. The crochet stitch texture of the garment is sharp and clearly visible. The scene feels authentically homey and inviting.',
       frontView:
-        'A handmade crochet jersey hanging on a wooden hanger fixed to a hook on a soft matte white indoor wall, warm and even ambient room lighting, no harsh sunlight, a small potted indoor plant on a tiny wooden wall shelf in the upper left, a handmade crochet bunny sitting on a small wooden stool at the lower right, a few crochet flowers resting near the base, the scene feels like a real cozy room and not a studio setup.',
+        'This exact handmade crochet garment hanging on a wooden hanger fixed to a hook on a soft matte white indoor wall, photographed straight on from the front. Study the garment\'s colour palette and character, then arrange two or three small complementary props in the scene — choose from items like a tiny handmade crochet animal on a small wooden stool, a few crochet flowers near the base, or a small potted indoor plant on a tiny wall shelf — selecting those whose colours and mood harmonise with the garment. Warm and even ambient room lighting with no harsh sunlight. The scene must feel like a real cozy room corner, not a photography studio. The garment dominates the frame; props add warmth without clutter.',
     },
   },
+
   keychains: {
     label: 'Keychains',
     icon: 'mdi:key',
-    description: 'Crochet keychains and bag charms',
+    description: 'All crochet keychains — animals, food, floral, geometric, seasonal',
     prompts: {
       topView:
-        'Top-down flat-lay on a light wooden table indoors, a fabric tote bag lying flat with a handmade crochet keychain attached to its zipper, a few yarn threads and a crochet hook placed casually around it, soft natural daylight from a window above, real home surface, unposed and warm.',
+        'Flat-lay shot from directly above of this exact handmade crochet keychain laid on a light oak wooden surface indoors. Carefully observe the keychain\'s shape, character, and colour palette, then place one tiny handmade crochet companion item right beside it that thematically and chromatically complements it — for instance a miniature crochet animal if it\'s a character keychain, a tiny crochet fruit if it\'s food-themed, a small crochet flower if it\'s floral, or a crochet star or moon if it\'s abstract. Add a small ball of pastel yarn or a few loose yarn threads in a toning colour scattered naturally nearby. Soft diffused daylight from a nearby window, warm and natural home atmosphere, the wood grain texture clearly visible. Unposed, genuine, and inviting — looks like a real lifestyle product photo. The keychain is the undisputed hero of the composition.',
       sideView:
-        'A fabric tote bag hanging on a light wooden wall hook indoors, a handmade crochet keychain clipped to the zipper and hanging freely, soft warm indoor light from a nearby window, the wall texture slightly visible in the background, the keychain sharp and in focus, natural and real-looking.',
+        'This exact handmade crochet keychain hanging from a small brass wall hook indoors, photographed from a gentle side angle. Study the keychain\'s design and colours, then place one tiny complementary handmade crochet companion item on a small wooden ledge just below the hook — choose something that matches the keychain\'s theme and palette. Soft warm ambient room light with no harsh shadows. The wall behind shows a faint natural matte texture in a warm neutral tone. The keychain is sharp and in clear focus, with a softly blurred cozy room interior in the background. The scene feels like a real home setting, never a studio.',
       frontView:
-        'Front-facing close-up of a handmade crochet keychain attached to a fabric bag placed on a wooden table, a warm indoor room softly blurred behind, natural light from the front, the keychain centred and in crisp detail, looks like a real lifestyle photo taken at home.',
+        'Front-facing close-up of this exact handmade crochet keychain lying centred on a light wooden table indoors. Observe the keychain\'s character and colour scheme, then tuck one tiny complementary handmade crochet companion naturally beside it — something that echoes its theme and harmonises with its palette. The keychain is the clear hero of the shot. A soft blurred warm room in the background, gentle natural light falling evenly across the scene from the front, the crochet texture crisp and richly detailed. Looks like a genuine lifestyle e-commerce product photo.',
     },
   },
+
   shoes: {
     label: 'Shoes',
     icon: 'mdi:shoe-sneaker',
-    description: 'Crochet footwear and slippers',
+    description: 'Crochet slippers, boots, mary-janes, sneakers, and sandals',
     prompts: {
       topView:
-        'Top-down view of a pair of handmade crochet shoes placed on a light wooden floor indoors, soft warm daylight falling across them from a nearby window, the floor grain visible, a small crochet flower tucked beside one shoe, no person, natural and clean indoor floor shot.',
+        'Top-down flat-lay of this exact pair of handmade crochet shoes placed neatly on a light oak wooden floor indoors. Observe the shoe style, silhouette, and colour palette, then place one small handmade crochet companion item beside one shoe — choose something that complements the shoe\'s aesthetic: a tiny crochet animal for cozy slippers, a crochet flower for elegant flats, a crochet star for sporty sneakers, or a crochet bear for boots. Add one subtle accent nearby such as a loose yarn spool or a few natural elements in toning colours. Soft diffused daylight from a nearby window falling gently across them. The wooden floor grain is faintly visible. Warm and cozy home setting, no person or mannequin. Looks like a real candid lifestyle product photo.',
       sideView:
-        'Side profile of a pair of crochet shoes resting on a light wooden indoor floor, a softly blurred white room wall behind them, warm natural window light from the side, no model or mannequin, positioned as if naturally set down, real and clean indoor atmosphere.',
+        'Side-profile shot of this exact pair of handmade crochet shoes resting on a light wooden indoor surface. Study the shoe style and colours, then place one small handmade crochet companion item beside them — something that visually complements the shoe type and palette. A softly blurred warm white room wall behind them. Gentle natural light from a side window highlighting the crochet stitch texture and silhouette clearly. No model or mannequin. The shoes are positioned as if naturally set down. Real and inviting home atmosphere.',
       frontView:
-        'Front-facing shot of a pair of handmade crochet shoes on a wooden indoor floor, a warm blurred room interior behind them, bright natural light from the front, no person or mannequin, the shoes slightly angled for depth, the crochet texture sharp and clear, feels like a real home setting.',
+        'Front-facing shot of this exact pair of handmade crochet shoes placed on a light wooden floor in a cozy indoor room, shoes slightly angled for natural depth. Observe the shoe style and colours, then place one tiny complementary handmade crochet item to one side on the floor — chosen to match the shoe\'s mood and palette. Warm diffused ambient light from the front. No person or mannequin. A softly blurred warm room interior visible behind them. The crochet texture is crisp and detailed. Feels like a genuine home lifestyle photograph.',
     },
   },
+
   decor: {
     label: 'Décor Pieces',
     icon: 'mdi:flower',
-    description: 'Flower pots, wall hangings, home décor',
+    description: 'Crochet pot covers, wall hangings, coasters, baskets, and bowls',
     prompts: {
       topView:
-        'Top-down shot of a handmade crochet décor piece on a light wooden shelf in a real indoor room, a small dried flower and another tiny crochet item beside it, soft warm light from a room lamp or window, the shelf and wall texture faintly visible, cozy home atmosphere.',
+        'Top-down shot of this exact handmade crochet décor piece on a light wooden surface indoors. Carefully observe the item\'s type, shape, and colour palette, then place one or two small complementary props nearby — for a pot cover add a tiny crochet leaf and a few smooth pebbles, for a wall hanging lay a small crochet moon charm beside it, for coasters place a small ceramic mug on one and a tiny crochet flower beside the set, for a basket tuck a small folded linen cloth inside and a tiny crochet mushroom beside it. Choose props whose colours harmonise with the piece. Soft warm window light from above and the side. The surface texture is faintly visible. Cozy and genuine home interior, never a studio. Looks like a real lifestyle flat-lay photo.',
       sideView:
-        'A handmade crochet décor piece displayed in its actual indoor home setting, side angle, resting on a wooden shelf or side table with a softly blurred living room behind it, warm natural light from a window, feels like a real home interior, not a studio.',
+        'This exact handmade crochet décor piece displayed on a light wooden shelf or surface in a real lived-in indoor room, photographed from a gentle side angle to show depth and texture. Study the item\'s type and colours, then add one small complementary handmade crochet companion — something that matches the décor piece\'s theme and colour palette, placed naturally beside it on the same surface. A softly blurred warm living room interior behind it. Natural window light from the side catching the crochet stitches. The décor piece is the clear focus. Cozy and real home feel.',
       frontView:
-        'Front-facing shot of a handmade crochet décor item placed on a wooden shelf against a soft white indoor wall, warm ambient room light, a small plant or dried stem beside it for natural styling, looks like a real home shelf, bright and inviting.',
+        'Front-facing shot of this exact handmade crochet décor piece placed on a wooden surface against a soft matte white indoor wall. Observe the item\'s character and palette, then add one small complementary handmade crochet companion beside it and one subtle natural accent — selected to match the piece\'s mood and colours. Warm and even ambient room lighting. The room background is softly blurred. The crochet stitching is crisp and the colours rich and true. Looks like a real home shelf styled for an e-commerce listing.',
     },
   },
+
   toys: {
     label: 'Toys & Dolls',
     icon: 'mdi:teddy-bear',
-    description: 'Amigurumi bears, dolls, and plushies',
+    description: 'Crochet bears, bunnies, dolls, animals, and fantasy creatures',
     prompts: {
       topView:
-        'Top-down shot of a handmade crochet amigurumi toy sitting on a light oak wooden table indoors, a crochet hook and a small ball of yarn placed beside it, soft daylight coming from a nearby window, warm and cozy home setting, the table grain visible, unposed and natural.',
+        'Top-down flat-lay of this exact handmade crochet toy sitting upright on a light oak wooden surface indoors. Study the toy\'s character type and colour palette, then place one small complementary handmade crochet accent beside it — a crochet star for classic bears, a crochet heart for dolls, a crochet leaf for animals, or a crochet moon for fantasy creatures — choosing the one that best matches the toy\'s theme and colours. Add a tiny ball of pastel yarn or a few loose yarn strands in a toning shade nearby. Soft natural daylight from a nearby window. Warm and cozy home setting, the table grain texture faintly visible. Unposed and genuine, looks like a real candid lifestyle product photo.',
       sideView:
-        'A crochet plush toy sitting on a small wooden table in a bright indoor room, soft white wall in the background slightly out of focus, a crochet hook and a folded piece of fabric beside it, warm natural window light from the side, the toy the clear focus, homey and genuine atmosphere.',
+        'This exact handmade crochet toy sitting on a small wooden table in a bright cozy indoor room, photographed from a gentle side angle. Observe the toy\'s character and colour scheme, then place one small complementary handmade crochet item beside it on the table — selected to match its theme and harmonise with its colours. A soft white or warm pastel wall blurred in the background. Warm natural window light from the side catching the yarn texture and any embroidered details. The toy is the clear focus. Feels genuinely handmade and real.',
       frontView:
-        'Front-facing shot of a handmade crochet stuffed toy placed on a light wooden table in a cozy indoor setting, a softly blurred warm room in the background, a crochet hook resting beside it, gentle natural light from the front, the toy sharp and centred, feels genuinely handmade and real.',
+        'Front-facing shot of this exact handmade crochet toy placed centred on a light wooden table in a warm indoor room. Study the toy\'s character and palette, then place one small complementary handmade crochet companion to one side — chosen to echo the toy\'s theme and colours. The toy is sharp and clearly detailed with any embroidered features visible. A softly blurred cozy room interior behind it. Gentle even natural light from the front. Looks like a genuine and inviting e-commerce product photo.',
     },
   },
+
   bookCovers: {
     label: 'Book Covers',
     icon: 'mdi:book-open-page-variant',
-    description: 'Crochet-wrapped journals and notebooks',
+    description: 'Crochet-covered journals, diaries, planners, and gift notebooks',
     prompts: {
       topView:
-        'Top-down flat-lay of a crochet-covered journal closed on a wooden desk indoors, a pen, a dried flower, and a small crochet bookmark beside it, warm natural daylight from a window, the desk surface texture visible, cozy and real study or bedroom setting.',
+        'Top-down flat-lay of this exact crochet-covered book lying closed on a light wooden desk indoors. Observe the cover\'s colour palette and style, then place one tiny complementary handmade crochet accent on or beside the cover — a crochet butterfly for personal journals, a crochet heart for gift notebooks, or a crochet star for planners — whichever best matches the cover\'s mood and colours. Add a slim pen and one small natural accent like a dried flower or paper clip in a toning shade placed casually nearby. Soft warm natural daylight from a nearby window. The desk surface texture is visible. Cozy and real study or bedroom setting. Unposed and natural, looks like a genuine lifestyle product photo.',
       sideView:
-        'Side profile of a crochet-covered journal propped upright on a wooden desk, showing the spine and the handmade texture of the cover, soft warm indoor light from the side, a blurred cozy room behind it, a pen resting beside it, real desk environment.',
+        'Side-profile shot of this exact crochet-covered book propped upright on a light wooden desk indoors, showing the spine and the handmade cover texture. Study the cover\'s colours, then perch one tiny complementary handmade crochet accent naturally on or near the top edge — chosen to harmonise with the cover\'s palette. A slim pen resting beside it on the desk. Soft warm ambient light from a side window. A blurred cozy room behind it. The book is sharp and in clear detail. Feels like a real and inviting home workspace.',
       frontView:
-        'Front-facing shot of a crochet-covered notebook propped slightly on a wooden desk in a warm indoor room, soft natural light from a side window, a pen and dried flower beside it, the room softly blurred behind, the crochet cover in clear sharp focus, warm and real.',
+        'Front-facing shot of this exact crochet-covered book propped gently on a light wooden desk in a warm cozy indoor room. Observe the cover\'s design and palette, then place one tiny complementary handmade crochet companion beside it on the desk surface — selected to match its mood and colours. A slim pen and one small natural accent resting nearby. The cover is sharp and the crochet texture rich and detailed. Soft natural light from the front. The room interior softly blurred behind. Looks like a genuine and professional e-commerce listing photo.',
     },
   },
+
   gajray: {
     label: 'Gajray',
     icon: 'mdi:flower-poppy',
-    description: 'Crochet floral garlands — hair & wrist',
+    description: 'Crochet floral garlands — hair, wrist, and bridal sets',
     prompts: {
       topView:
-        'Top-down flat-lay of a handmade crochet floral garland arranged in a gentle arc on a light wooden surface indoors, a few loose dried petals and small crochet flowers placed around it, soft warm daylight from a nearby window, natural and delicate indoor setting.',
+        'Top-down flat-lay of this exact handmade crochet floral garland arranged in a gentle natural shape on a light wooden vanity surface indoors. Observe the garland\'s flower colours and style, then place one tiny complementary handmade crochet companion beside it — a crochet bird for hair garlands, a crochet butterfly for wrist pieces, or both for a bridal set — chosen to harmonise with the garland\'s colour palette. Add a few small dried petals or seed pearl beads in toning colours scattered softly around. Soft warm diffused daylight from a nearby window. Delicate and natural home setting, the surface texture faintly visible. Looks like a real and graceful lifestyle product photo.',
       sideView:
-        'A handmade crochet floral garland draped over a small wooden jewellery stand or decorative hook on a dressing table indoors, warm soft light from a nearby lamp or window, a mirror or soft blurred room behind it, the crochet flowers in clear detail, feminine and real vanity setting.',
+        'This exact handmade crochet floral garland draped over a small wooden jewellery stand or decorative hook on a dressing table indoors. Study the garland\'s flower colours and arrangement, then place one tiny complementary handmade crochet companion at the base of the stand — selected to match the garland\'s palette and mood. The individual crochet flowers are clearly visible and in sharp focus. Soft warm light from a nearby window or vanity lamp. A softly blurred feminine room interior in the background. The garland is the clear hero. Natural and elegant.',
       frontView:
-        'Front-facing shot of a handmade crochet floral garland laid flat and centred on a light wooden dressing table, warm indoor room light, a softly blurred feminine room interior behind it, the individual crochet flower details sharp and clear, natural and graceful.',
+        'Front-facing shot of this exact handmade crochet floral garland laid flat and centred on a light wooden dressing table. Observe the flower colours and design, then place one tiny complementary handmade crochet companion delicately to one side — chosen to echo the garland\'s palette. The individual crochet flower details are sharp and richly coloured. Warm and even indoor ambient light. A softly blurred feminine room interior behind it. Looks like a genuine and inviting e-commerce product photo.',
     },
   },
 }
@@ -224,13 +233,10 @@ async function postProcessImages(images) {
   const { compressImage, dataURLtoFile } = await import('@/features/gallery-export/services/imageCompression')
   
   const processed = await Promise.all(images.map(async (img) => {
-    // If it's a proxy result or gemini result, it's a dataUrl
-    // If it's a mock result, it might be a picsum URL (handle both)
     let file
     if (img.url.startsWith('data:')) {
       file = dataURLtoFile(img.url, `${img.shotType}.png`)
     } else {
-      // For mock URLs, we fetch them first
       const res = await fetch(img.url)
       const blob = await res.blob()
       file = new File([blob], `${img.shotType}.png`, { type: blob.type })
@@ -238,7 +244,6 @@ async function postProcessImages(images) {
 
     const compressedFile = await compressImage(file)
     
-    // Convert compressed file back to dataURL
     const reader = new FileReader()
     const compressedUrl = await new Promise((resolve) => {
       reader.onload = () => resolve(reader.result)
@@ -257,7 +262,6 @@ async function postProcessImages(images) {
   return processed
 }
 
-
 // ─────────────────────────────────────────────
 // REAL GEMINI GENERATION
 // ─────────────────────────────────────────────
@@ -271,7 +275,6 @@ async function generateWithGeminiApi(activeShots, customPrompts, onProgress, api
     const angleMeta = SHOT_ANGLES[shotKey]
     const prompt = customPrompts[shotKey] || ''
 
-    // Report progress at the start of each shot
     onProgress(Math.round((i / total) * 90))
 
     const generatedDataUrl = await generateWithGemini({

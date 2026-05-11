@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { Icon } from '@iconify/vue'
+import BaseSelect from '@/core/components/BaseSelect.vue'
 import { getCategories, createProduct, uploadProductImage } from '../services/storeService'
 import { compressImage, dataURLtoFile } from '../services/imageCompression'
 
@@ -147,16 +148,15 @@ async function handleSubmit() {
             </div>
 
             <div class="grid-2">
-              <div class="field-group">
-                <label>Category <span class="required">*</span></label>
-                <div class="input-wrapper">
-                  <Icon icon="mdi:layers-outline" class="field-icon" />
-                  <select v-model="form.categoryId" :disabled="isLoadingCategories">
-                    <option v-if="isLoadingCategories" disabled value="">Loading categories...</option>
-                    <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
-                  </select>
-                </div>
-              </div>
+              <BaseSelect
+                  v-model="form.categoryId"
+                  :options="categories"
+                  label="Category"
+                  required
+                  icon="mdi:layers-outline"
+                  :disabled="isLoadingCategories"
+                  :placeholder="isLoadingCategories ? 'Loading categories...' : 'Select a category'"
+                />
               <div class="field-group">
                 <label>Stock Quantity</label>
                 <div class="input-wrapper">

@@ -306,13 +306,14 @@ async function handleValidate() {
 }
 
 .toggle-btn--proxy.toggle-btn--active {
-  background: var(--color-primary-container);
-  color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
 }
 
 .toggle-btn--active {
-  background: var(--color-primary-container);
-  color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  box-shadow: 0 4px 12px rgba(71, 161, 255, 0.2);
 }
 
 .proxy-hint {
